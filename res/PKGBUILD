@@ -1,0 +1,32 @@
+# Maintainer: WVlab
+_pkgname="paletea"
+pkgname="${_pkgname}-git"
+pkgver=r1.e86c006
+pkgrel=1
+pkgdesc="Manage themes in one place!"
+arch=('any')
+url="https://github.com/wvlab/paletea"
+license=('GPL')
+depends=(erlang-nox imagemagick)
+makedepends=(git elixir)
+source=("${_pkgname}::git+https://github.com/wvlab/paletea.git")
+conflicts=("${_pkgname}")
+provides=(paletea)
+sha256sums=('SKIP')
+
+pkgver() {
+    cd "$_pkgname"
+    printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+}
+
+build() {
+	cd "${srcdir}/${_pkgname}"
+    mix deps.get
+    mix escript.build
+}
+
+package() {
+	cd "${srcdir}/${_pkgname}"
+	mkdir -p "${pkgdir}/usr/share/paletea"
+	install -Dm755 paletea -t "${pkgdir}/usr/bin"
+}
