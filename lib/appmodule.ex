@@ -30,14 +30,18 @@ defmodule Paletea.AppModule do
   def watch_modules(processes) do
     receive do
       {mod, pid, :ok} ->
-        IO.puts("#{mod} is complete")
+        IO.puts([mod, " is complete"])
         watch_modules(List.delete(processes, pid))
 
       {mod, pid, :error, reason} ->
-        IO.warn("#{mod} failed, reason: #{reason}")
+        IO.warn([mod, " failed, reason: ", reason])
         watch_modules(List.delete(processes, pid))
     after
       10_000 -> processes |> Enum.filter(&Process.alive?/1) |> watch_modules()
     end
+  end
+
+  def default_module_path(theme, mod) do
+    Path.join([XDG.get_data_path(), theme, "modules", mod])
   end
 end

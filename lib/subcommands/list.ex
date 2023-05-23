@@ -20,8 +20,8 @@ defmodule Paletea.Subcommands.List do
             required: false,
             parser: :string
           ]
-        ],
-        #options: [
+        ]
+        # options: [
         #  format: [
         #    short: "-f",
         #    long: "--format",
@@ -29,7 +29,7 @@ defmodule Paletea.Subcommands.List do
         #    default: "plain",
         #    parser: :string
         #  ]
-        #]
+        # ]
       ]
     ]
   end
@@ -39,8 +39,10 @@ defmodule Paletea.Subcommands.List do
     case args do
       %{category: "themes", subcategory: nil} ->
         themes()
+
       %{category: "colors", subcategory: theme} when not is_nil(theme) ->
         colors(theme)
+
       _ ->
         IO.warn("Can't find that category or subcategory")
     end
@@ -62,18 +64,19 @@ defmodule Paletea.Subcommands.List do
         list
         |> Enum.filter(&File.exists?(Path.join(themes_dir, &1)))
         |> print_list()
+
       {:error, reason} ->
         IO.puts(reason)
     end
   end
-  
+
   defp colors(theme) do
-    path = Path.join([XDG.get_data_path(), theme, "theme.toml"]) 
-    
+    path = Path.join([XDG.get_data_path(), theme, "theme.toml"])
+
     %{
       "colors" => colors
     } = Toml.decode_file!(path)
- 
+
     colors
     |> Enum.map(&elem(&1, 1))
     |> print_list(0)

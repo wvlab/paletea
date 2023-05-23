@@ -1,15 +1,46 @@
 defmodule Paletea.AppModules.Kitty do
-  @behaviour Paletea.AppModule
+  # TODO: do something with defaultconf and it's pattern matching
+  alias Paletea.AppModule, as: AppModule
+  @behaviour AppModule
   @modulename "kitty"
+
+  def var_or_value(arg) do
+    case arg do
+      var when is_atom(var) and not is_nil(var) and not is_boolean(var) ->
+        quote do var!(unquote(arg)) end
+
+      var ->
+        quote do unquote(var) end
+    end
+  end
+
+  defmacro confgen(colors, mod_colors, opacity, location) do
+    quote do
+      %{
+        "colors" => unquote(var_or_value(colors)),
+        @modulename => %{
+          "colors" => unquote(var_or_value(mod_colors)),
+          "settings" => %{
+            "opacity" => unquote(var_or_value(opacity)),
+            "location" => unquote(var_or_value(location))
+          }
+        }
+      }
+    end
+  end
 
   def modulename() do
     @modulename
   end
 
+  def defaultconf() do
+    confgen(%{}, %{}, 0.8, :nil)
+  end
+
   @impl Paletea.AppModule
-  def run(theme, parent, %{"colors" => colors}) do
+  def run(theme, parent, conf) do
     try do
-      write_config(theme, colors)
+      write_config(theme, conf)
     catch
       error_trace -> send(parent, {@modulename, self(), :error, error_trace})
     else
@@ -17,7 +48,18 @@ defmodule Paletea.AppModules.Kitty do
     end
   end
 
-  defp write_config(theme, colors) do
+  # TODO: extract it some util?
+  defp mergefn(_k, v1, v2) when is_map(v1) and is_map(v2) do
+    Map.merge(v1, v2, &mergefn/3)
+  end
+
+  defp mergefn(_k, _v1, v2) do
+    v2
+  end
+
+  defp write_config(theme, conf) do
+    dbg confgen(colors, overwritten_colors, opacity, location) = Map.merge(defaultconf(), conf, &mergefn/3)
+    # TODO: it will be used not only in this module, extract it later
     %{
       "color0" => color0,
       "color1" => color1,
@@ -27,13 +69,12 @@ defmodule Paletea.AppModules.Kitty do
       "color5" => color5,
       "color6" => color6,
       "color7" => color7
-    } = colors
+    } = Map.merge(colors, overwritten_colors)
 
     # TODO: foreground, background, cursor colors
-    # TODO: make contrast colors, eg 8..15
+    # TODO: make contrast real colors, eg 8..15
     conf = """
-    background         #111111
-    background_opacity 0.80
+    background_opacity #{opacity}
 
     color0       #{color0}
     color8       #{color0}
@@ -53,9 +94,11 @@ defmodule Paletea.AppModules.Kitty do
     color15      #{color7}
     """
 
-    # TODO: Make separate func for getting path for module file
-    path = Path.join([XDG.get_data_path(), theme, "modules", "kitty"])
+    path = Path.expand(location || AppModule.default_module_path(theme, @modulename))
+
     unless File.exists?(path), do: File.mkdir_p!(path)
-    :ok = File.write(Path.join(path, "#{theme}.conf"), conf)
+    file_path = Path.join(path, "#{theme}.conf")
+    :ok = File.write(file_path, conf)
+    :ok = File.write(Path.join(path, "paletea.conf"), "include #{file_path}.conf")
   end
 end
