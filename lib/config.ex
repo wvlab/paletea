@@ -16,6 +16,8 @@ defmodule Paletea.ThemeConfig do
       ]
 
       [colors]
+      foreground = "#{Enum.at(colors, 0)}"
+      background = "#{Enum.at(colors, 7)}"
       color0 = "#{Enum.at(colors, 0)}"
       color1 = "#{Enum.at(colors, 1)}"
       color2 = "#{Enum.at(colors, 2)}"

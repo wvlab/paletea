@@ -4,7 +4,6 @@ defmodule Paletea.AppModule do
     Paletea.AppModules.XtermSeq
   ]
 
-  # TODO: add standart config to create default app config,
   @callback run(String.t(), pid(), map()) :: any()
 
   def all_names() do
@@ -43,5 +42,30 @@ defmodule Paletea.AppModule do
 
   def default_module_path(theme, mod) do
     Path.join([XDG.get_data_path(), theme, "modules", mod])
+  end
+
+  defmacro __using__(opts) do
+    quote do
+      alias Paletea.AppModule, as: AppModule
+      @behaviour AppModule
+
+      # TODO: Maybe extract it to another module like AppModuleConf or any other?
+      # this may make spec more clear. How to name it then?
+      unquote(
+        if :conf in opts or :conf == opts do
+          quote do
+            def v(arg) do
+              case arg do
+                arg when is_atom(arg) and not is_nil(arg) and not is_boolean(arg) ->
+                  quote(do: var!(unquote(arg)))
+
+                arg ->
+                  quote(do: unquote(arg))
+              end
+            end
+          end
+        end
+      )
+    end
   end
 end

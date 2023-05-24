@@ -1,40 +1,28 @@
 defmodule Paletea.AppModules.Kitty do
-  # TODO: do something with defaultconf and it's pattern matching
-  alias Paletea.AppModule, as: AppModule
-  @behaviour AppModule
+  use Paletea.AppModule, [:conf]
   @modulename "kitty"
 
-  def var_or_value(arg) do
-    case arg do
-      var when is_atom(var) and not is_nil(var) and not is_boolean(var) ->
-        quote do var!(unquote(arg)) end
-
-      var ->
-        quote do unquote(var) end
-    end
+  def modulename() do
+    @modulename
   end
 
   defmacro confgen(colors, mod_colors, opacity, location) do
     quote do
       %{
-        "colors" => unquote(var_or_value(colors)),
+        "colors" => unquote(v(colors)),
         @modulename => %{
-          "colors" => unquote(var_or_value(mod_colors)),
+          "colors" => unquote(v(mod_colors)),
           "settings" => %{
-            "opacity" => unquote(var_or_value(opacity)),
-            "location" => unquote(var_or_value(location))
+            "opacity" => unquote(v(opacity)),
+            "location" => unquote(v(location))
           }
         }
       }
     end
   end
 
-  def modulename() do
-    @modulename
-  end
-
   def defaultconf() do
-    confgen(%{}, %{}, 0.8, :nil)
+    confgen(%{}, %{}, 1, nil)
   end
 
   @impl Paletea.AppModule
@@ -58,9 +46,16 @@ defmodule Paletea.AppModules.Kitty do
   end
 
   defp write_config(theme, conf) do
-    dbg confgen(colors, overwritten_colors, opacity, location) = Map.merge(defaultconf(), conf, &mergefn/3)
-    # TODO: it will be used not only in this module, extract it later
+    confgen(
+      colors,
+      overwritten_colors,
+      opacity,
+      location
+    ) = Map.merge(defaultconf(), conf, &mergefn/3)
+
     %{
+      "foreground" => foreground,
+      "background" => background,
       "color0" => color0,
       "color1" => color1,
       "color2" => color2,
@@ -71,11 +66,13 @@ defmodule Paletea.AppModules.Kitty do
       "color7" => color7
     } = Map.merge(colors, overwritten_colors)
 
-    # TODO: foreground, background, cursor colors
     # TODO: make contrast real colors, eg 8..15
     conf = """
     background_opacity #{opacity}
 
+    foreground   #{foreground}
+    background   #{background}
+    cursor       #{foreground}
     color0       #{color0}
     color8       #{color0}
     color1       #{color1}
@@ -94,11 +91,18 @@ defmodule Paletea.AppModules.Kitty do
     color15      #{color7}
     """
 
-    path = Path.expand(location || AppModule.default_module_path(theme, @modulename))
+    path =
+      (location || AppModule.default_module_path(theme, @modulename))
+      |> Path.expand()
 
     unless File.exists?(path), do: File.mkdir_p!(path)
     file_path = Path.join(path, "#{theme}.conf")
     :ok = File.write(file_path, conf)
-    :ok = File.write(Path.join(path, "paletea.conf"), "include #{file_path}.conf")
+
+    :ok =
+      File.write(
+        Path.join(path, "paletea.conf"),
+        "include #{file_path}"
+      )
   end
 end
