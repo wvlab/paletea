@@ -2,31 +2,43 @@ defmodule Paletea.ThemeConfig do
   alias Paletea.AppConfig, as: AppConfig
 
   def write_config(colors, wallpapers \\ [], theme_dir) do
-    # TODO: add only that are in whitelist
-    conf =
-      """
-      wallpapers = [
-      #{print_list_content(wallpapers)}
-      ]
-      whitelist = [
-      #{print_list_content(AppConfig.get("whitelist"))}
-      ]
-      blacklist = [
-      #{print_list_content(AppConfig.get("blacklist"))}
-      ]
+    [
+      color0,
+      color1,
+      color2,
+      color3,
+      color4,
+      color5,
+      color6,
+      color7
+    ] = colors
 
-      [colors]
-      foreground = "#{Enum.at(colors, 0)}"
-      background = "#{Enum.at(colors, 7)}"
-      color0 = "#{Enum.at(colors, 0)}"
-      color1 = "#{Enum.at(colors, 1)}"
-      color2 = "#{Enum.at(colors, 2)}"
-      color3 = "#{Enum.at(colors, 3)}"
-      color4 = "#{Enum.at(colors, 4)}"
-      color5 = "#{Enum.at(colors, 5)}"
-      color6 = "#{Enum.at(colors, 6)}"
-      color7 = "#{Enum.at(colors, 7)}"
-      """ <> get_default_modules_configs()
+    conf =
+      [
+        """
+        wallpapers = [
+        #{print_list_content(wallpapers)}
+        ]
+        whitelist = [
+        #{print_list_content(AppConfig.get("whitelist"))}
+        ]
+        blacklist = [
+        #{print_list_content(AppConfig.get("blacklist"))}
+        ]
+
+        [colors]
+        foreground = "#{color0}"
+        background = "#{color7}"
+        color0 = "#{color0}"
+        color1 = "#{color1}"
+        color2 = "#{color2}"
+        color3 = "#{color3}"
+        color4 = "#{color4}"
+        color5 = "#{color5}"
+        color6 = "#{color6}"
+        color7 = "#{color7}"
+        """
+      ] ++ get_default_modules_configs()
 
     :ok = File.write(Path.join(theme_dir, "theme.toml"), conf)
   end
@@ -44,7 +56,7 @@ defmodule Paletea.ThemeConfig do
     _whitelist = AppConfig.get("whitelist")
     _blacklist = AppConfig.get("blacklist")
 
-    ""
+    []
   end
 end
 
