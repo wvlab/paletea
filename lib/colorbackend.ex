@@ -13,6 +13,6 @@ defmodule Paletea.ColorBackend do
 
   def get_default_colors() do
     # TODO: provide some colorscheme by default
-    for _ <- 1..8, do: {0, 0, 0}
+    for _ <- 1..8, do: "#000000"
   end
 end
