@@ -4,10 +4,7 @@ defmodule Paletea.ColorBackends.ImageMagickMagic do
 
   @impl Paletea.ColorBackend
   def get_colors(wallpaper) do
-    case wallpaper do
-      nil -> {"", 1}
-      _ -> parse_colors(wallpaper)
-    end
+    parse_colors(wallpaper)
   end
 
   defp parse_colors(wallpaper) do

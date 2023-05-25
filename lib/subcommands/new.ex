@@ -16,25 +16,43 @@ defmodule Paletea.Subcommands.New do
             parser: :string
           ]
         ],
-        options: [
-          wallpaper: [
-            value_name: "wallpaper",
-            short: "-w",
-            long: "--wallpaper",
-            help: "Path to a wallpaper files",
-            multiple: true,
-            parser: :string,
-            default: []
-          ],
-          backend: [
-            value_name: "backend",
-            short: "-b",
-            long: "--backend",
-            help: "Backend to gather colors from wallpaper",
-            default: "image_magick_magic",
-            parser: :string
-          ]
-        ]
+        options:
+          Enum.map(0..7, fn i ->
+            name = "color#{i}"
+
+            {String.to_atom(name),
+             [
+               value_name: name,
+               long: "--color#{i}",
+               help: "Explicitly adjust color #{i}",
+               parser: fn str ->
+                 if Regex.match?(~r/^#[a-f0-9]{6}$/i, str) do
+                   {:ok, str}
+                 else
+                   {:error, "Wrong format, it must be in hex"}
+                 end
+               end
+             ]}
+          end) ++
+            [
+              wallpaper: [
+                value_name: "wallpaper",
+                short: "-w",
+                long: "--wallpaper",
+                help: "Path to a wallpaper files",
+                multiple: true,
+                parser: :string,
+                default: []
+              ],
+              backend: [
+                value_name: "backend",
+                short: "-b",
+                long: "--backend",
+                help: "Backend to gather colors from wallpaper",
+                parser: :string,
+                default: "image_magick_magic"
+              ]
+            ]
       ]
     ]
   end
@@ -43,11 +61,22 @@ defmodule Paletea.Subcommands.New do
   def run(args) do
     %{
       args: %{theme: theme},
-      options: %{backend: backend, wallpaper: wallpapers}
+      options: %{
+        backend: backend,
+        wallpaper: wallpapers,
+        color0: color0,
+        color1: color1,
+        color2: color2,
+        color3: color3,
+        color4: color4,
+        color5: color5,
+        color6: color6,
+        color7: color7
+      }
     } = args
 
-    xdg_data_path = XDG.get_data_path()
-    theme_dir = Path.join(xdg_data_path, theme)
+    data_path = XDG.get_data_path()
+    theme_dir = Path.join(data_path, theme)
     wallpapers_dir = Path.join(theme_dir, "wallpapers")
 
     unless File.dir?(wallpapers_dir), do: File.mkdir_p(wallpapers_dir)
@@ -58,11 +87,21 @@ defmodule Paletea.Subcommands.New do
       [head | _] -> ColorBackend.get_colors(head, backend)
       _ -> ColorBackend.get_default_colors()
     end
+    |> Enum.zip([
+      color0,
+      color1,
+      color2,
+      color3,
+      color4,
+      color5,
+      color6,
+      color7
+    ])
+    |> Enum.map(fn {v1, v2} -> v2 || v1 end)
     |> Paletea.ThemeConfig.write_config(wallpapers, theme_dir)
   end
 
-  defp copy_wallpapers([], _) do
-  end
+  defp copy_wallpapers([], _), do: []
 
   defp copy_wallpapers(wallpapers, wallpapers_dir) do
     wallpapers
