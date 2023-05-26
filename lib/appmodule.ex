@@ -1,7 +1,8 @@
 defmodule Paletea.AppModule do
   @appmodules [
     Paletea.AppModules.Kitty,
-    Paletea.AppModules.XtermSeq
+    Paletea.AppModules.XtermSeq,
+    Paletea.AppModules.Hyprland
   ]
 
   @callback run(String.t(), pid(), map()) :: any()
