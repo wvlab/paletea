@@ -1,29 +1,24 @@
 defmodule Paletea.AppModules.Kitty do
-  use Paletea.AppModule, [:conf]
+  use Paletea.AppModule
   @modulename "kitty"
 
   def modulename() do
     @modulename
   end
 
-  defmacro confgen(colors, mod_colors, opacity, location) do
-    quote do
-      %{
-        "colors" => unquote(v(colors)),
-        @modulename => %{
-          "colors" => unquote(v(mod_colors)),
-          "settings" => %{
-            "opacity" => unquote(v(opacity)),
-            "location" => unquote(v(location))
-          }
+  def default_conf() do
+    %{
+      "colors" => %{},
+      @modulename => %{
+        "colors" => %{},
+        "settings" => %{
+          "opacity" => 1,
+          "location" => nil
         }
       }
-    end
+    }
   end
 
-  def defaultconf() do
-    confgen(%{}, %{}, 1, nil)
-  end
 
   @impl Paletea.AppModule
   def run(theme, parent, conf) do
@@ -46,12 +41,16 @@ defmodule Paletea.AppModules.Kitty do
   end
 
   defp write_config(theme, conf) do
-    confgen(
-      colors,
-      overwritten_colors,
-      opacity,
-      location
-    ) = Map.merge(defaultconf(), conf, &mergefn/3)
+    %{
+      "colors" => colors,
+      @modulename => %{
+        "colors" => overwritten_colors,
+        "settings" => %{
+          "opacity" => opacity,
+          "location" => location
+        }
+      }
+    } = Map.merge(default_conf(), conf, &mergefn/3)
 
     %{
       "foreground" => foreground,
