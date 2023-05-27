@@ -79,8 +79,6 @@ defmodule Paletea.Subcommands.New do
     theme_dir = Path.join(data_path, theme)
     wallpapers_dir = Path.join(theme_dir, "wallpapers")
 
-    unless File.dir?(wallpapers_dir), do: File.mkdir_p(wallpapers_dir)
-
     wallpapers = copy_wallpapers(wallpapers, wallpapers_dir)
 
     case wallpapers do
@@ -111,8 +109,8 @@ defmodule Paletea.Subcommands.New do
     |> Enum.map(fn {e, i} ->
       new_path = Path.join(wallpapers_dir, "#{i}#{Path.extname(e)}")
 
-      case File.copy(e, new_path) do
-        {:ok, _} -> new_path
+      case PaleFile.copy(e, new_path) do
+        :ok -> new_path
         {:error, reason} -> IO.warn(reason)
       end
     end)

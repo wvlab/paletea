@@ -27,7 +27,7 @@ defmodule Paletea.Subcommands.Erase do
 
     path = Path.join(XDG.get_data_path(), theme)
 
-    if Owl.IO.confirm() do
+    if PaleIO.confirm() do
       File.rm_rf!(path)
     end
   end

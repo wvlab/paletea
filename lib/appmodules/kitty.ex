@@ -89,16 +89,13 @@ defmodule Paletea.AppModules.Kitty do
     color15      #{color7}
     """
 
-    path =
-      (location || AppModule.default_module_path(theme, @modulename))
-      |> Path.expand()
+    path = location || AppModule.default_module_path(theme, @modulename)
 
-    unless File.exists?(path), do: File.mkdir_p!(path)
     file_path = Path.join(path, "#{theme}.conf")
-    :ok = File.write(file_path, conf)
+    :ok = PaleFile.write(file_path, conf)
 
     :ok =
-      File.write(
+      PaleFile.write(
         Path.join(path, "paletea.conf"),
         "include #{file_path}"
       )

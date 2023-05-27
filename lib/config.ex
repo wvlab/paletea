@@ -40,7 +40,7 @@ defmodule Paletea.ThemeConfig do
         """
       ] ++ get_default_modules_configs()
 
-    :ok = File.write(Path.join(theme_dir, "theme.toml"), conf)
+    :ok = PaleFile.write(Path.join(theme_dir, "theme.toml"), conf)
   end
 
   def parse(theme_dir) do

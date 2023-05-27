@@ -108,16 +108,13 @@ defmodule Paletea.AppModules.Hyprland do
       }
       |> Enum.map_join("\n\n", &make_section/1)
 
-    path =
-      (location || AppModule.default_module_path(theme, @modulename))
-      |> Path.expand()
+    path = location || AppModule.default_module_path(theme, @modulename)
 
-    unless File.exists?(path), do: File.mkdir_p!(path)
     file_path = Path.join(path, "#{theme}.conf")
-    :ok = File.write(file_path, conf)
+    :ok = PaleFile.write(file_path, conf)
 
     :ok =
-      File.write(
+      PaleFile.write(
         Path.join(path, "paletea.conf"),
         "source = #{file_path}"
       )
