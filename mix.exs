@@ -21,6 +21,7 @@ defmodule Paletea.MixProject do
       {:owl, "~> 0.7"},
       {:optimus, "~> 0.2"},
       {:toml, "~> 0.7.0"},
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
     ]
   end
 

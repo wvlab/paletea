@@ -12,12 +12,12 @@ defmodule Paletea.AppModules.Hyprland do
       @modulename => %{
         "colors" => %{},
         "settings" => %{
+          "active_border_opacity" => "ff",
+          "inactive_border_opacity" => "ff",
           "general" => %{
             "border_size" => nil,
             "gaps_in" => nil,
-            "gaps_out" => nil,
-            "active_border_opacity" => "ff",
-            "inactive_border_opacity" => "ff",
+            "gaps_out" => nil
           },
           "decoration" => %{
             "rounding" => nil,
@@ -29,9 +29,9 @@ defmodule Paletea.AppModules.Hyprland do
             "dim_strength" => nil
           },
           "dwindle" => %{
-            "smart_gaps" => nil,
+            "no_gaps_when_only" => nil
           },
-          "location" => nil,
+          "location" => nil
         }
       }
     }
@@ -57,39 +57,31 @@ defmodule Paletea.AppModules.Hyprland do
     v2
   end
 
-  defp write_line(_fmt, nil), do: ""
-
-  defp write_line(variable, value) do
-    "#{variable} = #{value}"
+  defp make_section({section, variables}) when is_map(variables) do
+    Enum.join(
+      [
+        "#{section} {",
+        variables
+        |> Enum.filter(fn {_, val} -> not is_nil(val) end)
+        |> Enum.map(fn {variable, val} -> "    #{variable} = #{val}\n" end),
+        "}"
+      ],
+      "\n"
+    )
   end
 
   defp write_config(theme, conf) do
-    # TODO: make it more consice
     %{
       "colors" => colors,
       @modulename => %{
         "colors" => overwritten_colors,
         "settings" => %{
-          "general" => %{
-            "border_size" => border_size,
-            "gaps_in" => gaps_in,
-            "gaps_out" => gaps_out,
-            "active_border_opacity" => active_border_opacity,
-            "inactive_border_opacity" => inactive_border_opacity,
-          },
-          "decoration" => %{
-            "rounding" => rounding,
-            "multisample_edges" => multisample_edges,
-            "blur" => blur,
-            "drop_shadow" => drop_shadow,
-            "shadow_range" => shadow_range,
-            "dim_inactive" => dim_inactive,
-            "dim_strength" => dim_strength
-          },
-          "dwindle" => %{
-            "smart_gaps" => smart_gaps,
-          },
-          "location" => location,
+          "active_border_opacity" => active_border_opacity,
+          "inactive_border_opacity" => inactive_border_opacity,
+          "general" => general,
+          "decoration" => decoration,
+          "dwindle" => dwindle,
+          "location" => location
         }
       }
     } = Map.merge(default_conf(), conf, &mergefn/3)
@@ -99,30 +91,22 @@ defmodule Paletea.AppModules.Hyprland do
       "color7" => color7
     } = Map.merge(colors, overwritten_colors)
 
-    # TODO: make contrast real colors, eg 8..15
-    conf = """
-    general {
-        #{write_line("border_size", border_size)}
-        #{write_line("gaps_in", gaps_in)}
-        #{write_line("gaps_out", gaps_out)}
-        col.active_border = rgba(#{String.slice(color7, 1..7)}#{active_border_opacity})
-        col.inactive_border = rgba(#{String.slice(color0, 1..7)}#{inactive_border_opacity})
-    }
-
-    decoration {
-      #{write_line("rounding", rounding)}
-      #{write_line("multisample_edges", multisample_edges)}
-      #{write_line("blur", blur)}
-      #{write_line("drop_shadow", drop_shadow)}
-      #{write_line("shadow_range", shadow_range)}
-      #{write_line("dim_inactive", dim_inactive)}
-      #{write_line("dim_strength", dim_strength)}
-    }
-
-    dwindle {
-      #{write_line("no_gaps_when_only", smart_gaps)}
-    }
-    """
+    conf =
+      %{
+        "general" =>
+          Map.merge(
+            general,
+            %{
+              "col.active_border" =>
+                "rgba(#{String.slice(color7, 1..7)}#{active_border_opacity})",
+              "col.inactive_border" =>
+                "rgba(#{String.slice(color0, 1..7)}#{inactive_border_opacity})"
+            }
+          ),
+        "decoration" => decoration,
+        "dwindle" => dwindle
+      }
+      |> Enum.map_join("\n\n", &make_section/1)
 
     path =
       (location || AppModule.default_module_path(theme, @modulename))

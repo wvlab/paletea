@@ -19,7 +19,6 @@ defmodule Paletea.AppModules.Kitty do
     }
   end
 
-
   @impl Paletea.AppModule
   def run(theme, parent, conf) do
     try do
