@@ -31,13 +31,17 @@ defmodule Paletea.Subcommands.Change do
       "blacklist" => blacklist
     } = conf
 
-    if Enum.member?(blacklist, "any") do
+    if "any" in blacklist do
       IO.puts("All modules are blacklisted")
       exit(1)
     end
 
-    if(Enum.member?(whitelist, "any"), do: AppModule.all_names(), else: whitelist)
-    |> Enum.filter(fn m -> not Enum.member?(blacklist, m) end)
+    if "any" in whitelist do
+      AppModule.all_names()
+    else
+      whitelist
+    end
+    |> Enum.filter(fn m -> m not in blacklist end)
     |> AppModule.start(theme, self(), conf)
   end
 end

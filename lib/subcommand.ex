@@ -1,7 +1,7 @@
 defmodule Paletea.Subcommand do
   # TODO: make proper definition
   @callback run(args :: any()) :: any()
-  @callback args_info() :: list()
+  @callback args_info() :: list(Optimus.arg_spec_item())
 
   @subcommands [
     Paletea.Subcommands.New,

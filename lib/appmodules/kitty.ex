@@ -8,7 +8,19 @@ defmodule Paletea.AppModules.Kitty do
 
   def default_conf() do
     %{
-      "colors" => %{},
+      "colors" => %{
+        "foreground" => "color7",
+        "background" => "color0",
+        "cursor" => "foreground",
+        "color8" => "darken(color0, 0.1)",
+        "color9" => "darken(color1, 0.1)",
+        "color10" => "darken(color2, 0.1)",
+        "color11" => "darken(color3, 0.1)",
+        "color12" => "darken(color4, 0.1)",
+        "color13" => "darken(color5, 0.1)",
+        "color14" => "darken(color6, 0.1)",
+        "color15" => "darken(color7, 0.1)"
+      },
       @modulename => %{
         "colors" => %{},
         "settings" => %{
@@ -43,7 +55,7 @@ defmodule Paletea.AppModules.Kitty do
     %{
       "colors" => colors,
       @modulename => %{
-        "colors" => overwritten_colors,
+        "colors" => adjusted_colors,
         "settings" => %{
           "opacity" => opacity,
           "location" => location
@@ -54,6 +66,7 @@ defmodule Paletea.AppModules.Kitty do
     %{
       "foreground" => foreground,
       "background" => background,
+      "cursor" => cursor,
       "color0" => color0,
       "color1" => color1,
       "color2" => color2,
@@ -61,32 +74,39 @@ defmodule Paletea.AppModules.Kitty do
       "color4" => color4,
       "color5" => color5,
       "color6" => color6,
-      "color7" => color7
-    } = Map.merge(colors, overwritten_colors)
+      "color7" => color7,
+      "color8" => color8,
+      "color9" => color9,
+      "color10" => color10,
+      "color11" => color11,
+      "color12" => color12,
+      "color13" => color13,
+      "color14" => color14,
+      "color15" => color15
+    } = PalePuer.evaluate!(Map.merge(colors, adjusted_colors))
 
-    # TODO: make contrast real colors, eg 8..15
     conf = """
     background_opacity #{opacity}
 
     foreground   #{foreground}
     background   #{background}
-    cursor       #{foreground}
+    cursor       #{cursor}
     color0       #{color0}
-    color8       #{color0}
+    color8       #{color8}
     color1       #{color1}
-    color9       #{color1}
+    color9       #{color9}
     color2       #{color2}
-    color10      #{color2}
+    color10      #{color10}
     color3       #{color3}
-    color11      #{color3}
+    color11      #{color11}
     color4       #{color4}
-    color12      #{color4}
+    color12      #{color12}
     color5       #{color5}
-    color13      #{color5}
+    color13      #{color13}
     color6       #{color6}
-    color14      #{color6}
+    color14      #{color14}
     color7       #{color7}
-    color15      #{color7}
+    color15      #{color15}
     """
 
     path = location || AppModule.default_module_path(theme, @modulename)

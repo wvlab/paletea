@@ -10,10 +10,11 @@ defmodule Paletea.AppModules.Hyprland do
     %{
       "colors" => %{},
       @modulename => %{
-        "colors" => %{},
+        "colors" => %{
+          "active_border" => "alpha(color7, 255)",
+          "inactive_border" => "alpha(color0, 255)"
+        },
         "settings" => %{
-          "active_border_opacity" => "ff",
-          "inactive_border_opacity" => "ff",
           "general" => %{
             "border_size" => nil,
             "gaps_in" => nil,
@@ -74,10 +75,8 @@ defmodule Paletea.AppModules.Hyprland do
     %{
       "colors" => colors,
       @modulename => %{
-        "colors" => overwritten_colors,
+        "colors" => adjusted_colors,
         "settings" => %{
-          "active_border_opacity" => active_border_opacity,
-          "inactive_border_opacity" => inactive_border_opacity,
           "general" => general,
           "decoration" => decoration,
           "dwindle" => dwindle,
@@ -87,9 +86,9 @@ defmodule Paletea.AppModules.Hyprland do
     } = Map.merge(default_conf(), conf, &mergefn/3)
 
     %{
-      "color0" => color0,
-      "color7" => color7
-    } = Map.merge(colors, overwritten_colors)
+      "active_border" => active_border_color,
+      "inactive_border" => inactive_border_color
+    } = PalePuer.evaluate!(Map.merge(colors, adjusted_colors))
 
     conf =
       %{
@@ -97,10 +96,8 @@ defmodule Paletea.AppModules.Hyprland do
           Map.merge(
             general,
             %{
-              "col.active_border" =>
-                "rgba(#{String.slice(color7, 1..7)}#{active_border_opacity})",
-              "col.inactive_border" =>
-                "rgba(#{String.slice(color0, 1..7)}#{inactive_border_opacity})"
+              "col.active_border" => "rgba(#{String.slice(active_border_color, 1..9)})",
+              "col.inactive_border" => "rgba(#{String.slice(inactive_border_color, 1..9)})"
             }
           ),
         "decoration" => decoration,

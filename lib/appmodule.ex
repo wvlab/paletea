@@ -24,10 +24,10 @@ defmodule Paletea.AppModule do
     |> watch_modules()
   end
 
-  def watch_modules([]) do
+  defp watch_modules([]) do
   end
 
-  def watch_modules(processes) do
+  defp watch_modules(processes) do
     receive do
       {mod, pid, :ok} ->
         IO.puts([mod, " is complete"])
