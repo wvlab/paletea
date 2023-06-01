@@ -29,7 +29,7 @@ defmodule PalePuer do
   end
 
   def call_function(function, args) do
-    apply(PaleFoo.Callables, String.to_atom(function), args)
+    apply(PalePuer.Callables, String.to_atom(function), args)
   end
 
   def evaluate!(colors) when is_map(colors) do
