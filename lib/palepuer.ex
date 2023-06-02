@@ -3,6 +3,16 @@
 defmodule PalePuer do
   @function_call_regex ~r/^(\w+)\((.*)\)$/
 
+  def call_function(function, args) do
+    apply(PalePuer.Callables, String.to_atom(function), args)
+  end
+
+  def evaluate!(colors) when is_map(colors) do
+    colors
+    |> Enum.map(fn {c, v} -> {c, evaluate!(v, colors)} end)
+    |> Map.new()
+  end
+
   def evaluate!(str, colors) when is_map(colors) do
     case Regex.scan(@function_call_regex, str) do
       [[_, function, arguments]] ->
@@ -26,16 +36,6 @@ defmodule PalePuer do
       _ ->
         raise RuntimeError
     end
-  end
-
-  def call_function(function, args) do
-    apply(PalePuer.Callables, String.to_atom(function), args)
-  end
-
-  def evaluate!(colors) when is_map(colors) do
-    colors
-    |> Enum.map(fn {c, v} -> {c, evaluate!(v, colors)} end)
-    |> Map.new()
   end
 end
 

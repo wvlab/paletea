@@ -77,7 +77,7 @@ defmodule Paletea.AppModules.Ratbag do
 
   defp set_settings([current | devices], leds, mode, duration, brightness) do
     leds
-    |> Enum.map(fn {n, color} ->
+    |> Enum.each(fn {n, color} ->
       ratbagctl_set(current, n, "color", String.slice(color, 1..7))
       ratbagctl_set(current, n, "mode", mode)
       ratbagctl_set(current, n, "duration", duration)

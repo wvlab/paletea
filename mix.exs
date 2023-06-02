@@ -8,12 +8,19 @@ defmodule Paletea.MixProject do
       elixir: "~> 1.14",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      escript: escript()
+      escript: escript(),
+      test_coverage: coverage()
     ]
   end
 
   def application do
     []
+  end
+
+  defp coverage() do
+    [
+      ignore_modules: [Paletea.App]
+    ]
   end
 
   defp deps do
