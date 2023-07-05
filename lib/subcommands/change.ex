@@ -42,6 +42,6 @@ defmodule Paletea.Subcommands.Change do
       whitelist
     end
     |> Enum.filter(fn m -> m not in blacklist end)
-    |> AppModule.start(theme, self(), conf)
+    |> AppModule.start(theme, conf)
   end
 end

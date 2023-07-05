@@ -22,15 +22,9 @@ defmodule Paletea.AppModules.Ratbag do
     }
   end
 
-  @impl Paletea.AppModule
-  def run(_theme, parent, conf) do
-    try do
-      configure_devices(conf)
-    catch
-      error_trace -> send(parent, {@modulename, self(), :error, error_trace})
-    else
-      _ -> send(parent, {@modulename, self(), :ok})
-    end
+  @impl AppModule
+  def run(_theme, conf) do
+    configure_devices(conf)
   end
 
   # TODO: extract it some util?

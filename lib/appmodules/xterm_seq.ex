@@ -1,5 +1,5 @@
 defmodule Paletea.AppModules.XtermSeq do
-  @behaviour Paletea.AppModule
+  use Paletea.AppModule
 
   @modulename "xterm_seq"
 
@@ -41,8 +41,8 @@ defmodule Paletea.AppModules.XtermSeq do
     v2
   end
 
-  @impl Paletea.AppModule
-  def run(_theme, parent, conf) do
+  @impl AppModule
+  def run(_theme, conf) do
     %{
       "colors" => colors,
       @modulename => %{
@@ -65,8 +65,6 @@ defmodule Paletea.AppModules.XtermSeq do
     Path.wildcard("/dev/pts/*")
     |> Enum.filter(&Regex.match?(~r/^\/dev\/pts\/\d+$/, &1))
     |> Enum.each(&File.write(&1, sequences, [:binary, :write]))
-
-    send(parent, {@modulename, self(), :ok})
   end
 
   defp set_color(index, color) do

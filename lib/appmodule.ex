@@ -6,7 +6,7 @@ defmodule Paletea.AppModule do
     Paletea.AppModules.Ratbag
   ]
 
-  @callback run(String.t(), pid(), map()) :: any()
+  @callback run(String.t(), map()) :: any()
 
   def all_names() do
     Enum.map(all_modules(), & &1.modulename())
@@ -16,30 +16,20 @@ defmodule Paletea.AppModule do
     @appmodules
   end
 
-  def start(mods, theme, parent, conf) do
+  def start(mods, theme, conf) do
     mods
-    |> Enum.map(fn m ->
-      Module.concat(Paletea.AppModules, Macro.camelize(m))
+    |> Enum.map(&Module.concat(Paletea.AppModules, Macro.camelize(&1)))
+    |> Enum.map(fn mod ->
+      Task.async(fn ->
+        try do
+          apply(mod, :run, [theme, conf])
+        rescue
+          # TODO: make better error showing
+          err -> IO.inspect([mod, err])
+        end
+      end)
     end)
-    |> Enum.map(fn m -> spawn(m, :run, [theme, parent, conf]) end)
-    |> watch_modules()
-  end
-
-  defp watch_modules([]) do
-  end
-
-  defp watch_modules(processes) do
-    receive do
-      {mod, pid, :ok} ->
-        IO.puts([mod, " is complete"])
-        watch_modules(List.delete(processes, pid))
-
-      {mod, pid, :error, reason} ->
-        IO.warn([mod, " failed, reason: ", reason])
-        watch_modules(List.delete(processes, pid))
-    after
-      10_000 -> processes |> Enum.filter(&Process.alive?/1) |> watch_modules()
-    end
+    |> Task.await_many(:infinity)
   end
 
   def default_module_path(theme, mod) do

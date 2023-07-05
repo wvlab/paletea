@@ -38,15 +38,9 @@ defmodule Paletea.AppModules.Hyprland do
     }
   end
 
-  @impl Paletea.AppModule
-  def run(theme, parent, conf) do
-    try do
-      write_config(theme, conf)
-    catch
-      error_trace -> send(parent, {@modulename, self(), :error, error_trace})
-    else
-      _ -> send(parent, {@modulename, self(), :ok})
-    end
+  @impl AppModule
+  def run(theme, conf) do
+    write_config(theme, conf)
   end
 
   # TODO: extract it some util?
@@ -108,12 +102,11 @@ defmodule Paletea.AppModules.Hyprland do
     path = location || AppModule.default_module_path(theme, @modulename)
 
     file_path = Path.join(path, "#{theme}.conf")
-    :ok = PaleFile.write(file_path, conf)
+    PaleFile.write!(file_path, conf)
 
-    :ok =
-      PaleFile.write(
-        Path.join(path, "paletea.conf"),
-        "source = #{file_path}"
-      )
+    PaleFile.write!(
+      Path.join(path, "paletea.conf"),
+      "source = #{file_path}"
+    )
   end
 end
