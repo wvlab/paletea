@@ -1,4 +1,6 @@
 defmodule Paletea.AppModule do
+  alias Paletea.AppModules.PaStructtern, as: PaStructtern
+
   @appmodules [
     Paletea.AppModules.Kitty,
     Paletea.AppModules.XtermSeq,
@@ -6,29 +8,59 @@ defmodule Paletea.AppModule do
     Paletea.AppModules.Ratbag
   ]
 
+  # implement this for better solution when there will be more than one module
+  # that appends "native" modules
+  # @appendingmodules [Paletea.AppModules.PaStructtern]
+
   @callback run(String.t(), map()) :: any()
 
-  def all_names() do
-    Enum.map(all_modules(), & &1.modulename())
+  defp module_name(mod) when is_atom(mod) do
+    mod.modulename()
   end
 
-  def all_modules() do
-    @appmodules
+  defp module_name(%PaStructtern{modulename: mod}) do
+    mod
   end
 
-  def start(mods, theme, conf) do
-    mods
-    |> Enum.map(&Module.concat(Paletea.AppModules, Macro.camelize(&1)))
-    |> Enum.map(fn mod ->
-      Task.async(fn ->
-        try do
-          apply(mod, :run, [theme, conf])
-        rescue
-          # TODO: make better error showing
-          err -> IO.inspect([mod, err])
-        end
-      end)
+  defp run_module(mod, theme, conf) when is_atom(mod) do
+    Task.async(fn ->
+      try do
+        apply(mod, :run, [theme, conf])
+      rescue
+        # TODO: make better error showing
+        err -> IO.inspect([mod, err])
+      end
     end)
+  end
+
+  defp run_module(%PaStructtern{} = mod, theme, conf) do
+    PaStructtern.run_module(mod, theme, conf)
+  end
+
+  defp all_modules(theme) do
+    enabled = Paletea.AppConfig.get("enable", [])
+
+    if "patterns" in enabled do
+      @appmodules ++ PaStructtern.find_modules(theme)
+    else
+      @appmodules
+    end
+  end
+
+  def start(theme, conf, whitelist, blacklist) do
+    all_modules(theme)
+    |> Enum.filter(
+      if "any" in whitelist do
+        fn _ -> true end
+      else
+        fn mod ->
+          modname = module_name(mod)
+
+          modname in whitelist and modname not in blacklist
+        end
+      end
+    )
+    |> Enum.map(&run_module(&1, theme, conf))
     |> Task.await_many(:infinity)
   end
 

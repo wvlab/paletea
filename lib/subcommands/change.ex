@@ -36,12 +36,6 @@ defmodule Paletea.Subcommands.Change do
       exit(1)
     end
 
-    if "any" in whitelist do
-      AppModule.all_names()
-    else
-      whitelist
-    end
-    |> Enum.filter(fn m -> m not in blacklist end)
-    |> AppModule.start(theme, conf)
+    AppModule.start(theme, conf, whitelist, blacklist)
   end
 end

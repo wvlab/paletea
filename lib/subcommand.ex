@@ -19,7 +19,7 @@ defmodule Paletea.Subcommand do
   def run({[subcommand], args}) do
     "Elixir.Paletea.Subcommands"
     |> Module.concat(Macro.camelize(to_string(subcommand)))
-    |> apply(:run, [args])
+    |> then(& &1.run(args))
   end
 
   def all_subcommands() do

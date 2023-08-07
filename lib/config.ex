@@ -80,7 +80,7 @@ defmodule Paletea.AppConfig do
     )
   end
 
-  def get(key) do
-    Agent.get(__MODULE__, &Map.get(&1, key))
+  def get(key, default \\ nil) do
+    Agent.get(__MODULE__, &Map.get(&1, key, default))
   end
 end
