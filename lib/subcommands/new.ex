@@ -29,7 +29,7 @@ defmodule Paletea.Subcommands.New do
                  if Regex.match?(~r/^#[a-f0-9]{6}$/i, str) do
                    {:ok, str}
                  else
-                   {:error, "Wrong format, it must be in hex"}
+                   {:error, "Hex rgb values were expected, but got something else"}
                  end
                end
              ]}

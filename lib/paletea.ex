@@ -22,7 +22,7 @@ defmodule Paletea.App do
     Paletea.AppConfig.start_link()
 
     optparser()
-    |> Optimus.parse!(if argv == [], do: ["--help"], else: argv)
+    |> Optimus.parse!(Subcommand.process_argv(argv))
     |> Subcommand.run()
   end
 end
