@@ -24,7 +24,6 @@ defmodule Paletea.AppModules.Kitty do
       @modulename => %{
         "colors" => %{},
         "settings" => %{
-          "opacity" => 1,
           "location" => nil
         }
       }
@@ -50,12 +49,14 @@ defmodule Paletea.AppModules.Kitty do
       "colors" => colors,
       @modulename => %{
         "colors" => adjusted_colors,
-        "settings" => %{
-          "opacity" => opacity,
-          "location" => location
-        }
+        "settings" => settings_section
       }
     } = Map.merge(default_conf(), conf, &mergefn/3)
+
+    location = Map.fetch!(settings_section, "location")
+    settings = Map.delete(settings_section, "location")
+
+    all_colors = Map.merge(colors, adjusted_colors, &mergefn/3)
 
     %{
       "foreground" => foreground,
@@ -77,31 +78,38 @@ defmodule Paletea.AppModules.Kitty do
       "color13" => color13,
       "color14" => color14,
       "color15" => color15
-    } = PalePuer.evaluate!(Map.merge(colors, adjusted_colors))
+    } = PalePuer.evaluate!(all_colors)
 
-    conf = """
-    background_opacity #{opacity}
+    conf =
+      """
+      foreground   #{foreground}
+      background   #{background}
+      cursor       #{cursor}
+      color0       #{color0}
+      color8       #{color8}
+      color1       #{color1}
+      color9       #{color9}
+      color2       #{color2}
+      color10      #{color10}
+      color3       #{color3}
+      color11      #{color11}
+      color4       #{color4}
+      color12      #{color12}
+      color5       #{color5}
+      color13      #{color13}
+      color6       #{color6}
+      color14      #{color14}
+      color7       #{color7}
+      color15      #{color15}
+      """ <>
+        (settings
+         |> Enum.map_join("\n", fn
+           {s, v} when is_bitstring(v) ->
+             "#{s} #{PalePuer.evaluate!(v, all_colors)}"
 
-    foreground   #{foreground}
-    background   #{background}
-    cursor       #{cursor}
-    color0       #{color0}
-    color8       #{color8}
-    color1       #{color1}
-    color9       #{color9}
-    color2       #{color2}
-    color10      #{color10}
-    color3       #{color3}
-    color11      #{color11}
-    color4       #{color4}
-    color12      #{color12}
-    color5       #{color5}
-    color13      #{color13}
-    color6       #{color6}
-    color14      #{color14}
-    color7       #{color7}
-    color15      #{color15}
-    """
+           {s, v} ->
+             "#{s} #{v}"
+         end))
 
     path = location || AppModule.default_module_path(theme, @modulename)
 
